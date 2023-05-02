@@ -1,0 +1,272 @@
+From 73fc343c7929bb385ded53130d842dc5d084bfe3 Mon Sep 17 00:00:00 2001
+From: Mikhail Rudenko <mike.rudenko@gmail.com>
+Date: Mon, 21 Jun 2021 21:29:30 +0300
+Subject: [PATCH] Use exact versions when importing Gtk and friends
+
+This is necessary in environments where Gtk-3 and Gtk-4 are both
+installed. Otherwise, multiple `AttributeError`s arise, e.g.
+
+```
+Traceback (most recent call last):
+  File "/usr/bin/lios", line 19, in <module>
+    from lios.main import *
+  File "/usr/lib/python3.9/site-packages/lios/main.py", line 27, in <module>
+    from lios import scanner, editor, imageview, cam, ocr, preferences, speech
+  File "/usr/lib/python3.9/site-packages/lios/editor.py", line 20, in <module>
+    from lios.ui.gtk import text_view, tree_view, widget, dialog, file_chooser, containers, window
+  File "/usr/lib/python3.9/site-packages/lios/ui/gtk/widget.py", line 166, in <module>
+    class Separator(Gtk.HSeparator):
+  File "/usr/lib/python3.9/site-packages/gi/overrides/__init__.py", line 32, in __getattr__
+    return getattr(self._introspection_module, name)
+  File "/usr/lib/python3.9/site-packages/gi/module.py", line 123, in __getattr__
+    raise AttributeError("%r object has no attribute %r" % (
+AttributeError: 'gi.repository.Gtk' object has no attribute 'HSeparator'
+```
+---
+ lios/cam.py                 | 5 +++++
+ lios/ui/gtk/about.py        | 3 +++
+ lios/ui/gtk/containers.py   | 5 ++++-
+ lios/ui/gtk/dialog.py       | 3 +++
+ lios/ui/gtk/drawing_area.py | 7 +++++--
+ lios/ui/gtk/file_chooser.py | 3 +++
+ lios/ui/gtk/icon_view.py    | 4 ++++
+ lios/ui/gtk/loop.py         | 9 ++++++---
+ lios/ui/gtk/menu.py         | 5 ++++-
+ lios/ui/gtk/print_dialog.py | 3 +++
+ lios/ui/gtk/terminal.py     | 3 +++
+ lios/ui/gtk/text_view.py    | 3 +++
+ lios/ui/gtk/tree_view.py    | 4 ++++
+ lios/ui/gtk/widget.py       | 3 +++
+ lios/ui/gtk/window.py       | 4 ++++
+ 15 files changed, 57 insertions(+), 7 deletions(-)
+
+diff --git a/lios/cam.py b/lios/cam.py
+index db0a06f..23087ad 100644
+--- a/lios/cam.py
++++ b/lios/cam.py
+@@ -16,6 +16,11 @@
+ #    You should have received a copy of the GNU General Public License
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
++
++import gi
++gi.require_version("Gtk", "3.0")
++gi.require_version('GstVideo', '1.0')
++
+ from gi.repository import GdkX11, GstVideo
+ from gi.repository import Gtk
+ from gi.repository import Gst
+diff --git a/lios/ui/gtk/about.py b/lios/ui/gtk/about.py
+index b98196c..cfd8e1e 100644
+--- a/lios/ui/gtk/about.py
++++ b/lios/ui/gtk/about.py
+@@ -18,6 +18,9 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ from gi.repository import GdkPixbuf
+ 
+diff --git a/lios/ui/gtk/containers.py b/lios/ui/gtk/containers.py
+index afc462e..91d073c 100644
+--- a/lios/ui/gtk/containers.py
++++ b/lios/ui/gtk/containers.py
+@@ -18,7 +18,10 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
+-from gi.repository import Gtk	
++import gi
++gi.require_version("Gtk", "3.0")
++
++from gi.repository import Gtk
+ from lios.ui.gtk import icon
+ from lios import macros
+ 		
+diff --git a/lios/ui/gtk/dialog.py b/lios/ui/gtk/dialog.py
+index 671d9b8..33aaae2 100644
+--- a/lios/ui/gtk/dialog.py
++++ b/lios/ui/gtk/dialog.py
+@@ -18,6 +18,9 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ 
+ 
+diff --git a/lios/ui/gtk/drawing_area.py b/lios/ui/gtk/drawing_area.py
+index 112c36f..ed32040 100755
+--- a/lios/ui/gtk/drawing_area.py
++++ b/lios/ui/gtk/drawing_area.py
+@@ -18,8 +18,11 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
+-from gi.repository import Gtk		
+-from gi.repository import Gdk		
++import gi
++gi.require_version("Gtk", "3.0")
++
++from gi.repository import Gtk
++from gi.repository import Gdk
+ from gi.repository import GdkPixbuf
+ 		
+ 
+diff --git a/lios/ui/gtk/file_chooser.py b/lios/ui/gtk/file_chooser.py
+index cd8eb17..b2e2a64 100644
+--- a/lios/ui/gtk/file_chooser.py
++++ b/lios/ui/gtk/file_chooser.py
+@@ -18,6 +18,9 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ 
+ 
+diff --git a/lios/ui/gtk/icon_view.py b/lios/ui/gtk/icon_view.py
+index c37f12a..5bce48f 100644
+--- a/lios/ui/gtk/icon_view.py
++++ b/lios/ui/gtk/icon_view.py
+@@ -17,6 +17,10 @@
+ #    You should have received a copy of the GNU General Public License
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
++
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ from gi.repository import Gdk
+ from gi.repository import GdkPixbuf
+diff --git a/lios/ui/gtk/loop.py b/lios/ui/gtk/loop.py
+index 9c205ed..7db04eb 100644
+--- a/lios/ui/gtk/loop.py
++++ b/lios/ui/gtk/loop.py
+@@ -18,9 +18,12 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
+-from gi.repository import Gtk		
+-from gi.repository import Gdk		
+-		
++import gi
++gi.require_version("Gtk", "3.0")
++
++from gi.repository import Gtk
++from gi.repository import Gdk
++
+ def start_main_loop():
+ 	Gtk.main()
+ 
+diff --git a/lios/ui/gtk/menu.py b/lios/ui/gtk/menu.py
+index 12ebd05..6b6092d 100644
+--- a/lios/ui/gtk/menu.py
++++ b/lios/ui/gtk/menu.py
+@@ -18,8 +18,11 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+-from lios.ui.gtk import icon		
++from lios.ui.gtk import icon
+ from lios import macros
+ 
+ SEPARATOR = 1;
+diff --git a/lios/ui/gtk/print_dialog.py b/lios/ui/gtk/print_dialog.py
+index 4010e5d..5ba4a70 100644
+--- a/lios/ui/gtk/print_dialog.py
++++ b/lios/ui/gtk/print_dialog.py
+@@ -18,6 +18,9 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ from gi.repository import Pango
+ from gi.repository import PangoCairo
+diff --git a/lios/ui/gtk/terminal.py b/lios/ui/gtk/terminal.py
+index 5139c52..656a6c2 100644
+--- a/lios/ui/gtk/terminal.py
++++ b/lios/ui/gtk/terminal.py
+@@ -18,6 +18,9 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk, GObject, Vte
+ from gi.repository import GLib
+ from gi.repository import Gdk
+diff --git a/lios/ui/gtk/text_view.py b/lios/ui/gtk/text_view.py
+index 9aad00d..2b38172 100644
+--- a/lios/ui/gtk/text_view.py
++++ b/lios/ui/gtk/text_view.py
+@@ -18,6 +18,9 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ from gi.repository import Gdk
+ from gi.repository import GdkPixbuf
+diff --git a/lios/ui/gtk/tree_view.py b/lios/ui/gtk/tree_view.py
+index afa4fe7..d17fa8e 100755
+--- a/lios/ui/gtk/tree_view.py
++++ b/lios/ui/gtk/tree_view.py
+@@ -17,6 +17,10 @@
+ #    You should have received a copy of the GNU General Public License
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
++
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ 
+ class CellRendererSpin(Gtk.CellRendererSpin):
+diff --git a/lios/ui/gtk/widget.py b/lios/ui/gtk/widget.py
+index c28ef2f..c8a579e 100644
+--- a/lios/ui/gtk/widget.py
++++ b/lios/ui/gtk/widget.py
+@@ -18,6 +18,9 @@
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
+ 
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ from gi.repository import GLib
+ from gi.repository import Gdk
+diff --git a/lios/ui/gtk/window.py b/lios/ui/gtk/window.py
+index 81ac685..ac3971f 100644
+--- a/lios/ui/gtk/window.py
++++ b/lios/ui/gtk/window.py
+@@ -17,6 +17,10 @@
+ #    You should have received a copy of the GNU General Public License
+ #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ ###########################################################################
++
++import gi
++gi.require_version("Gtk", "3.0")
++
+ from gi.repository import Gtk
+ from gi.repository import GdkPixbuf
+ 	
